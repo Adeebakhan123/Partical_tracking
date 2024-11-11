@@ -2,10 +2,14 @@ import cv2
 import numpy as np
 import csv
 
-cap = cv2.VideoCapture('./jupiter_timelapse.mp4')
+# cap = cv2.VideoCapture('./jupiter_timelapse.mp4')
+cap = cv2.VideoCapture('WhatsApp Video 2024-11-10 at 6.16.12 PM.mp4')
 
-lower_white = np.array([0, 0, 200]) 
-upper_white = np.array([180, 30, 255])  
+# lower_white = np.array([0, 0, 200]) 
+# upper_white = np.array([180, 30, 255])  
+
+lower_white = np.array([10, 100, 100])  
+upper_white = np.array([25, 255, 255])
 coordinates = []
 
 with open('jupiter_coordinates.csv', mode='w', newline='') as file:
@@ -155,3 +159,75 @@ print("Tracked coordinates of Jupiter:", coordinates)
 
 # # Optionally, you can print or analyze the stored coordinates list
 # print("Tracked coordinates of Jupiter:", coordinates)
+import cv2
+import numpy as np
+import csv
+
+# cap = cv2.VideoCapture('./jupiter_timelapse.mp4')
+cap = cv2.VideoCapture('WhatsApp Video 2024-11-10 at 6.16.12 PM.mp4')
+
+# lower_white = np.array([0, 0, 200]) 
+# upper_white = np.array([180, 30, 255])  
+
+lower_white = np.array([10, 100, 100])  
+upper_white = np.array([25, 255, 255])
+coordinates = []
+
+with open('jupiter_coordinates.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Frame', 'X', 'Y'])  
+    
+    frame_count = 0
+    delay = 100  
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        
+        if not ret:
+            print("End of video or failed to load.")
+            break
+        
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        
+        mask = cv2.inRange(hsv, lower_white, upper_white)
+        
+        cv2.imshow('Mask', mask)
+        
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
+        
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        print(f"Frame {frame_count}: {len(contours)} contours detected")
+        
+        if contours:
+            c = max(contours, key=cv2.contourArea)
+            
+            M = cv2.moments(c)
+            if M["m00"] > 0:  
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                
+                coordinates.append((frame_count, cx, cy))
+                
+                writer.writerow([frame_count, cx, cy])
+                
+                cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+                
+                print(f"Frame {frame_count}: Jupiter coordinates: ({cx}, {cy})")
+        
+        cv2.imshow('Jupiter Tracking', frame)
+        
+        if cv2.waitKey(delay) & 0xFF == ord('q'):
+            break
+        
+        frame_count += 1
+
+cap.release()
+cv2.destroyAllWindows()
+
+with open('jupiter_coordinates_list.txt', mode='w') as file:
+    for coord in coordinates:
+        file.write(f"Frame {coord[0]}: Jupiter coordinates: ({cx}, {cy})\n")
+
+print("Tracked coordinates of Jupiter:", coordinates)
