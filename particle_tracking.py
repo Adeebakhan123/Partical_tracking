@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from numpy.polynomial.polynomial import Polynomial
 
 # Load the video
-cap = cv2.VideoCapture('WhatsApp Video 2024-11-10 at 6.16.12 PM.mp4')
+cap = cv2.VideoCapture('one_cycle.mp4')
+# cap = cv2.VideoCapture('WhatsApp Video 2024-11-10 at 6.16.12 PM.mp4')
 
 # Define the HSV range for the orange particle
 lower_orange = np.array([10, 100, 100])  
